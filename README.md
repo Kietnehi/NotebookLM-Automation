@@ -148,7 +148,6 @@ NotebookLM-Automation/
 
 - **Ngôn ngữ Web:** Script hiện đang dò tìm các nút bấm bằng tiếng Việt trên giao diện Google NotebookLM (ví dụ: `Tạo`, `Tải tệp lên`, `Tổng quan bằng video`). Nếu giao diện Google của bạn đang ở tiếng Anh, vui lòng đổi ngôn ngữ Google sang tiếng Việt hoặc sửa lại các text locator trong code.
 - Tool sẽ bỏ qua (escape) nếu gặp lỗi trong quá trình bóc tách từng tệp để đảm bảo luồng chạy không bị sập hoàn toàn.
-
 ## 🔗 Author's GitHub
 
 <div align="center">
@@ -163,8 +162,8 @@ NotebookLM-Automation/
 
 <h3>🚀 Truong Phu Kiet</h3>
 
-<a href="https://github.com/Kietnehi">
-  <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&pause=1000&color=236AD3&background=00000000&center=true&vCenter=true&width=435&lines=Student+@+Sai+Gon+University;Fullstack+Dev+%26+AI+Researcher;Building+AI-AGENT+%26+Docker+Systems" alt="Typing SVG" />
+<a href="https://github.com/Kietnehi/NotebookLM-Automation">
+  <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&pause=1000&color=236AD3&background=00000000&center=true&vCenter=true&width=435&lines=NotebookLM+Automation+Tool;Google+NotebookLM+Workflow+Automation;Built+with+Python+%26+Playwright" alt="Typing SVG" />
 </a>
 
 <br/><br/>
@@ -183,18 +182,20 @@ NotebookLM-Automation/
 
 <br/>
 
-<h3>🌟 AI Agent Using Multimodal Open-Source Models & APIs </h3>
+<h3>🌟 NotebookLM Automation Project </h3>
 <p align="center">
-  <a href="https://github.com/Kietnehi/AI-AGENT">
-    <img src="https://img.shields.io/github/stars/Kietnehi/AI-AGENT?style=for-the-badge&color=yellow" alt="Stars"/>
-    <img src="https://img.shields.io/github/forks/Kietnehi/AI-AGENT?style=for-the-badge&color=orange" alt="Forks"/>
-    <img src="https://img.shields.io/github/issues/Kietnehi/AI-AGENT?style=for-the-badge&color=red" alt="Issues"/>
+  <a href="https://github.com/Kietnehi/NotebookLM-Automation">
+    <img src="https://img.shields.io/github/stars/Kietnehi/NotebookLM-Automation?style=for-the-badge&color=yellow" alt="Stars"/>
+    <img src="https://img.shields.io/github/forks/Kietnehi/NotebookLM-Automation?style=for-the-badge&color=orange" alt="Forks"/>
+    <img src="https://img.shields.io/github/issues/Kietnehi/NotebookLM-Automation?style=for-the-badge&color=red" alt="Issues"/>
   </a>
 </p>
+
 <!-- Dynamic quote -->
 <p align="center">
   <img src="https://quotes-github-readme.vercel.app/api?type=horizontal&theme=dark" alt="Daily Quote"/>
 </p>
+
 <p align="center">
   <i>Thank you for visiting! Don’t forget to click <b>⭐️ Star</b> to support the project.</i>
 </p>
