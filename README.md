@@ -66,12 +66,13 @@ Hướng dẫn này giúp bạn cấu hình trình duyệt Chrome để script c
 ---
 
 ## 🛠 Bước 1: Tìm đường dẫn thực thi của Chrome
-Để script khởi động đúng trình duyệt bạn đang dùng, hãy xác định file `chrome.exe`:
+Để script khởi động đúng trình duyệt, hãy xác định đường dẫn đến file `chrome.exe`:
 1. Mở Chrome.
-2. Nhập `chrome://version/` vào thanh địa chỉ rồi nhấn Enter.
-3. Tìm dòng **Executable Path** (Đường dẫn thực thi). 
-   * *Thông thường là:* `C:\Program Files\Google\Chrome\Application\chrome.exe`
-
+2. Nhập `chrome://version/` vào thanh địa chỉ và nhấn Enter.
+3. Tìm dòng **Executable Path** (Đường dẫn thực thi). Copy toàn bộ đường dẫn này.
+   - *Thông thường:* `C:\Program Files\Google\Chrome\Application\chrome.exe` (64-bit)
+   - *Nếu dùng 32-bit hoặc cài ở thư mục khác:* có thể là `C:\Program Files (x86)\Google\Chrome\Application\chrome.exe` hoặc tương tự.
+4. Giữ đường dẫn này để tham chiếu; script mặc định dùng `channel="chrome"` nên thường không cần chỉnh, nhưng nếu gặp lỗi khởi động thì có thể dùng `executable_path` trong `launch_persistent_context`.
 ---
 
 ## 📂 Bước 2: Tạo thư mục dữ liệu người dùng (ChromeAuto)
@@ -81,20 +82,19 @@ Script của bạn sử dụng `USER_DATA_DIR` để lưu Session (phiên đăng
 
 ---
 
-## 🔑 Bước 3: Đăng nhập tài khoản của bạn
-Để script "nhớ" tài khoản, bạn thực hiện như sau:
+## 🔑 Bước 3: Đăng nhập tài khoản của bạn (lấy session)
+Để script "nhớ" tài khoản, bạn cần khởi tạo profile ChromeAuto và đăng nhập Google một lần:
 
-1. **Chạy script lần đầu tiên:** Ở chế độ `headless=False` (như trong code của bạn).
-2. **Đăng nhập trước bằng ChromeAuto (khuyến nghị):** Mở Command Prompt và chạy lệnh sau để mở đúng profile lưu  ( Dùng Excecutable Path của bạn và đường dẫn ChromeAuto đã tạo):
+1. **Chuẩn bị:** Đã có đường dẫn `chrome.exe` từ Bước 1 và đã tạo thư mục `ChromeAuto` từ Bước 2.
+2. **Mở Chrome với profile ChromeAuto (khuyến nghị):** Mở Command Prompt và chạy lệnh sau, thay đường dẫn `chrome.exe` bằng **Executable Path** bạn vừa tìm được:
 
-  ```bash
-  "C:\Program Files\Google\Chrome\Application\chrome.exe" --user-data-dir="C:\Users\ADMIN\Desktop\ChromeAuto"
-  ```
+   ```bash
+   "C:\Program Files\Google\Chrome\Application\chrome.exe" --user-data-dir="C:\Users\ADMIN\Desktop\ChromeAuto"
+   ```
 
-  Sau đó đăng nhập Google trong cửa sổ Chrome vừa mở, rồi đóng Chrome.
-3. **Đăng nhập thủ công:** Khi trình duyệt tự động mở lên trang NotebookLM, hãy thực hiện đăng nhập tài khoản Google của bạn (nhập Email, Mật khẩu, xác nhận 2FA nếu có).
-4. **Kiểm tra:** Sau khi đăng nhập thành công vào giao diện NotebookLM, hãy tắt script.
-5. **Kết quả:** Từ lần chạy thứ 2 trở đi, Playwright sẽ mở đúng thư mục `ChromeAuto` đó và bạn sẽ **luôn luôn ở trạng thái đã đăng nhập**.
+   Cửa sổ Chrome sẽ mở với profile mới (trống). Hãy đăng nhập Google trong cửa sổ đó, rồi đóng Chrome. Việc này tạo session trong `ChromeAuto`.
+3. **Hoặc đăng nhập thủ công qua script:** Chạy `python main.py` lần đầu. Khi trình duyệt tự động mở NotebookLM, hãy đăng nhập Google (Email, Mật khẩu, 2FA nếu có). Sau khi đăng nhập thành công, bạn có thể tắt script.
+4. **Kết quả:** Từ lần chạy thứ 2 trở đi, Playwright sẽ dùng thư mục `ChromeAuto` đã chứa session và bạn sẽ **luôn ở trạng thái đã đăng nhập**.
 
 ---
 

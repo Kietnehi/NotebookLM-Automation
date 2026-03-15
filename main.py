@@ -7,7 +7,7 @@ from playwright.sync_api import sync_playwright
 FOLDER_PATH = r"C:\Users\ADMIN\Desktop\Github Fulll Project\NotebookLM-Automation\Documentss"
 VIDEO_SAVE_PATH = r"C:\Users\ADMIN\Desktop\Github Fulll Project\NotebookLM-Automation\Video"
 IMAGE_SAVE_PATH = r"C:\Users\ADMIN\Desktop\Github Fulll Project\NotebookLM-Automation\Images_NoteBookLM"
-USER_DATA_DIR = r"C:\Users\ADMIN\Desktop\test"
+USER_DATA_DIR = r"C:\Users\ADMIN\Desktop\ChromeAuto
 
 # Khởi tạo thư mục nếu chưa có
 for path in [VIDEO_SAVE_PATH, IMAGE_SAVE_PATH]:
