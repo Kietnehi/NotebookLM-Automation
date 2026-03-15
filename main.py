@@ -7,13 +7,52 @@ from playwright.sync_api import sync_playwright
 FOLDER_PATH = r"C:\Users\ADMIN\Desktop\Github Fulll Project\NotebookLM-Automation\Documentss"
 VIDEO_SAVE_PATH = r"C:\Users\ADMIN\Desktop\Github Fulll Project\NotebookLM-Automation\Video"
 IMAGE_SAVE_PATH = r"C:\Users\ADMIN\Desktop\Github Fulll Project\NotebookLM-Automation\Images_NoteBookLM"
-USER_DATA_DIR = r"C:\Users\ADMIN\Desktop\ChromeAuto"
+USER_DATA_DIR = r"C:\Users\ADMIN\Desktop\test"
 
 # Khởi tạo thư mục nếu chưa có
 for path in [VIDEO_SAVE_PATH, IMAGE_SAVE_PATH]:
     if not os.path.exists(path):
         os.makedirs(path)
         print(f"📁 Đã chuẩn bị thư mục: {path}")
+
+def is_notebook_ready(page):
+    create_button = page.locator("button:has-text('Tạo'), [role='button']:has-text('Tạo')").first
+    upload_button = page.locator("button:has-text('Tải tệp lên'), [role='button']:has-text('Tải tệp lên')").first
+
+    return create_button.is_visible() or upload_button.is_visible()
+
+def wait_for_notebook_ready(page, timeout_ms=15000):
+    elapsed_ms = 0
+    interval_ms = 1000
+
+    while elapsed_ms < timeout_ms:
+        if is_notebook_ready(page):
+            return True
+        page.wait_for_timeout(interval_ms)
+        elapsed_ms += interval_ms
+
+    return False
+
+def ensure_logged_in(page):
+    if wait_for_notebook_ready(page, timeout_ms=10000):
+        return
+
+    print("\n" + "="*70)
+    print("🔐 Có vẻ bạn chưa đăng nhập Google trong profile ChromeAuto.")
+    print("1. Chrome sẽ được giữ nguyên để bạn đăng nhập thủ công.")
+    print("2. Sau khi vào được giao diện NotebookLM, quay lại Terminal.")
+    print("3. Nhấn [ENTER] để script kiểm tra lại và tiếp tục chạy.")
+    print("="*70)
+
+    input("\n👉 ĐĂNG NHẬP XONG RỒI NHẤN [ENTER] ĐỂ TIẾP TỤC...")
+
+    page.goto("https://notebooklm.google.com/", wait_until="domcontentloaded")
+
+    if not wait_for_notebook_ready(page, timeout_ms=30000):
+        raise RuntimeError(
+            "Không tìm thấy giao diện NotebookLM sau khi đăng nhập. "
+            "Hãy kiểm tra xem bạn đã vào đúng trang và tài khoản có quyền truy cập NotebookLM chưa."
+        )
 
 def organize_downloaded_files():
     print("\n" + "="*50)
@@ -42,8 +81,86 @@ def organize_downloaded_files():
     except Exception as e:
         print(f"❌ Lỗi khi phân loại file: {e}")
 
+def close_stray_tabs(context, main_page):
+    # Một số click có thể mở tab phụ ngoài ý muốn; đóng tab đó để giữ đúng luồng.
+    for p in list(context.pages):
+        if p != main_page:
+            try:
+                p.close()
+            except Exception:
+                pass
+
+def click_scoped_create_button(page, artifact_label):
+    """
+    Chỉ bấm nút "Tạo" nếu nó nằm trong đúng vùng chứa artifact cần tạo.
+    Trả về True nếu click thành công, False nếu không tìm thấy nút đủ tin cậy.
+    """
+    artifact_key = artifact_label.strip().lower()
+
+    # Ưu tiên nút trong dialog có chứa tên artifact.
+    dialogs = page.locator("[role='dialog'], [aria-modal='true']")
+    for i in range(dialogs.count()):
+        dialog = dialogs.nth(i)
+        try:
+            if not dialog.is_visible():
+                continue
+            dialog_text = dialog.inner_text().lower()
+            if artifact_key not in dialog_text:
+                continue
+
+            create_btn = dialog.get_by_role("button", name=re.compile(r"^\s*Tạo\s*$", re.IGNORECASE)).first
+            if create_btn.is_visible():
+                create_btn.click(force=True)
+                return True
+        except Exception:
+            continue
+
+    # Fallback: nút "Tạo" trong card/khối có chính text artifact.
+    scoped_btn = page.locator(
+        f"[aria-label*='{artifact_label}'] button:has-text('Tạo'), "
+        f"[aria-label*='{artifact_label}'] [role='button']:has-text('Tạo')"
+    ).first
+    try:
+        if scoped_btn.is_visible():
+            scoped_btn.click(force=True)
+            return True
+    except Exception:
+        pass
+
+    return False
+
+def activate_artifact_creation(page, context, artifact_label, selectors):
+    """
+    Kích hoạt tạo artifact theo selector cụ thể.
+    Trả về dict trạng thái để log rõ: đã bấm card hay chưa, và đã bấm nút Tạo hay chưa.
+    """
+    trigger = None
+    for selector in selectors:
+        candidate = page.locator(selector).last
+        try:
+            candidate.wait_for(state="visible", timeout=4000)
+            trigger = candidate
+            break
+        except Exception:
+            continue
+
+    if trigger is None:
+        raise RuntimeError(f"Không tìm thấy vùng '{artifact_label}'.")
+
+    trigger.scroll_into_view_if_needed()
+    trigger.click(force=True)
+    close_stray_tabs(context, page)
+    page.wait_for_timeout(800)
+
+    create_clicked = click_scoped_create_button(page, artifact_label)
+    return {
+        "trigger_clicked": True,
+        "create_clicked": create_clicked,
+    }
+
 def run_automation():
     with sync_playwright() as p:
+        context = None
         try:
             print(f"🌐 Đang khởi động Chrome...")
             
@@ -61,11 +178,12 @@ def run_automation():
             
             print("🔗 Đang truy cập NotebookLM...")
             page.goto("https://notebooklm.google.com/", wait_until="domcontentloaded")
+            ensure_logged_in(page)
 
             # --- BƯỚC 1: TẠO NOTEBOOK MỚI ---
             print("🔍 Đang tìm nút tạo Notebook...")
             new_btn = page.locator("button:has-text('Tạo'), [role='button']:has-text('Tạo')").first
-            new_btn.wait_for(state="visible", timeout=15000)
+            new_btn.wait_for(state="visible", timeout=30000)
             new_btn.click()
             print("✅ Đã tạo Notebook mới.")
 
@@ -103,14 +221,21 @@ def run_automation():
             # 3.1 Tạo Video Overview
             try:
                 print("🎬 Đang yêu cầu tạo 'Tổng quan bằng video'...")
-                video_card = page.locator("[aria-label*='Tổng quan bằng video']").last
-                video_card.wait_for(state="visible", timeout=10000)
-                video_card.click(force=True)
+                video_status = activate_artifact_creation(
+                    page,
+                    context,
+                    "Tổng quan bằng video",
+                    [
+                        "[aria-label*='Tổng quan bằng video']",
+                        "div[role='button']:has-text('Tổng quan bằng video')",
+                        "button:has-text('Tổng quan bằng video')",
+                    ],
+                )
 
-                create_confirm = page.locator("button:has-text('Tạo')").last
-                create_confirm.wait_for(state="visible", timeout=5000)
-                create_confirm.click(force=True)
-                print("✅ Đã kích hoạt Render Video.")
+                if video_status["create_clicked"]:
+                    print("✅ Đã bấm card và nút 'Tạo' cho Video.")
+                else:
+                    print("✅ Đã bấm card Video. ")
             except Exception as e:
                 print(f"⚠️ Không thể tự động bấm 'Tạo Video': {e}")
 
@@ -119,17 +244,21 @@ def run_automation():
             # 3.2 Tạo Bản đồ hoạ thông tin
             try:
                 print("📊 Đang yêu cầu tạo 'Bản đồ hoạ thông tin'...")
-                # Locator linh hoạt hơn để tránh lỗi timeout
-                infographic_btn = page.locator("div[aria-label='Bản đồ hoạ thông tin'], [role='button']:has-text('Bản đồ hoạ thông tin')").last
-                
-                infographic_btn.scroll_into_view_if_needed()
-                infographic_btn.click(force=True, timeout=5000)
-                
-                page.wait_for_timeout(1000)
-                final_create_btn = page.locator("button:has-text('Tạo')").last
-                if final_create_btn.is_visible():
-                    final_create_btn.click(force=True)
-                print("✅ Đã kích hoạt tạo Bản đồ hoạ thông tin.")
+                infographic_status = activate_artifact_creation(
+                    page,
+                    context,
+                    "Bản đồ hoạ thông tin",
+                    [
+                        "div[aria-label='Bản đồ hoạ thông tin']",
+                        "[role='button']:has-text('Bản đồ hoạ thông tin')",
+                        "button:has-text('Bản đồ hoạ thông tin')",
+                    ],
+                )
+
+                if infographic_status["create_clicked"]:
+                    print("✅ Đã bấm card và nút 'Tạo' cho Bản đồ hoạ thông tin.")
+                else:
+                    print("✅ Đã bấm card Bản đồ hoạ thông tin. Không có nút 'Tạo' riêng — hệ thống tự động tạo.")
             except Exception as e:
                 print(f"⚠️ Không thể tự động bấm 'Bản đồ hoạ': {e}")
                 print("ℹ️ Đừng lo, bạn có thể tự bấm nút này trên trình duyệt bây giờ.")
@@ -237,7 +366,8 @@ def run_automation():
         
         finally:
             print("\n--- Kết thúc phiên làm việc ---")
-            context.close()
+            if context:
+                context.close()
 
 if __name__ == "__main__":
     run_automation()

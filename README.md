@@ -85,9 +85,16 @@ Script của bạn sử dụng `USER_DATA_DIR` để lưu Session (phiên đăng
 Để script "nhớ" tài khoản, bạn thực hiện như sau:
 
 1. **Chạy script lần đầu tiên:** Ở chế độ `headless=False` (như trong code của bạn).
-2. **Đăng nhập thủ công:** Khi trình duyệt tự động mở lên trang NotebookLM, hãy thực hiện đăng nhập tài khoản Google của bạn (nhập Email, Mật khẩu, xác nhận 2FA nếu có).
-3. **Kiểm tra:** Sau khi đăng nhập thành công vào giao diện NotebookLM, hãy tắt script.
-4. **Kết quả:** Từ lần chạy thứ 2 trở đi, Playwright sẽ mở đúng thư mục `ChromeAuto` đó và bạn sẽ **luôn luôn ở trạng thái đã đăng nhập**.
+2. **Đăng nhập trước bằng ChromeAuto (khuyến nghị):** Mở Command Prompt và chạy lệnh sau để mở đúng profile lưu  ( Dùng Excecutable Path của bạn và đường dẫn ChromeAuto đã tạo):
+
+  ```bash
+  "C:\Program Files\Google\Chrome\Application\chrome.exe" --user-data-dir="C:\Users\ADMIN\Desktop\ChromeAuto"
+  ```
+
+  Sau đó đăng nhập Google trong cửa sổ Chrome vừa mở, rồi đóng Chrome.
+3. **Đăng nhập thủ công:** Khi trình duyệt tự động mở lên trang NotebookLM, hãy thực hiện đăng nhập tài khoản Google của bạn (nhập Email, Mật khẩu, xác nhận 2FA nếu có).
+4. **Kiểm tra:** Sau khi đăng nhập thành công vào giao diện NotebookLM, hãy tắt script.
+5. **Kết quả:** Từ lần chạy thứ 2 trở đi, Playwright sẽ mở đúng thư mục `ChromeAuto` đó và bạn sẽ **luôn luôn ở trạng thái đã đăng nhập**.
 
 ---
 
